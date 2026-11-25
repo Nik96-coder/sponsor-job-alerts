@@ -225,10 +225,11 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
         url = str(row.get("job_url") or "")
         title = str(row.get("title") or "").strip()
         company = str(row.get("company") or "").strip()
-        if url in seen:
+        t = title.lower()
+        dup_key = f"ct:{normalise(company)}|{normalise(title)}"
+        if url in seen or dup_key in seen:
             stats["seen"] += 1
             continue
-        t = title.lower()
         if incl_titles and not any(re.search(rf"\b{re.escape(w)}", t) for w in incl_titles):
             stats["title"] += 1
             continue
@@ -277,7 +278,16 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
             "salary": salary_text,
             "url": url,
             "flags": flags,
+            "dup_key": dup_key,
         })
+    # Same job on several sites: keep one copy, preferring the one that shows a salary.
+    best = {}
+    for j in kept:
+        k = j["dup_key"]
+        if k not in best or (not best[k]["salary"] and j["salary"]):
+            best[k] = j
+    stats["duplicate"] = len(kept) - len(best)
+    kept = list(best.values())
     log(f"Filtered out: {stats}")
     kept.sort(key=lambda j: (bool(j["flags"]), j["company"].lower()))
     return kept
@@ -296,6 +306,7 @@ def save_seen(seen: dict, new_jobs: list[dict], remember_days: int) -> None:
     now = datetime.now(timezone.utc)
     for j in new_jobs:
         seen[j["url"]] = now.isoformat()
+        seen[j["dup_key"]] = now.isoformat()
     cutoff = now - timedelta(days=remember_days)
     seen = {u: t for u, t in seen.items() if datetime.fromisoformat(t) >= cutoff}
     STATE_FILE.parent.mkdir(exist_ok=True)
