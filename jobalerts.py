@@ -151,10 +151,15 @@ def match_sponsor(company: str, sponsors: dict[str, str], keys: list[str], thres
     if best:
         return sponsors[best[0]], int(best[1]), "fuzzy"
     # Brand names often differ from the legal name ("Bauer Media" vs "Bauer Radio Limited").
-    first = key.split()[0]
-    candidates = first_index.get(first, [])
+    # Only trust it when the rest of the job's company name also appears in the register name,
+    # so "Nuffield Health" doesn't match "Nuffield Foundation".
+    tokens = key.split()
+    candidates = first_index.get(tokens[0], [])
     if 0 < len(candidates) <= 5:
-        return candidates[0], 0, "brand"
+        rest = set(tokens[1:])
+        for official in candidates:
+            if rest <= set(normalise(official).split()):
+                return official, 0, "brand"
     return None, 0, None
 
 
@@ -207,6 +212,8 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
     keys = list(sponsors.keys())
     first_index = build_first_word_index(sponsors)
     excl_titles = [w.lower() for w in cfg.get("exclude_title_words", [])]
+    incl_titles = [w.lower() for w in cfg.get("include_title_words", [])]
+    title_exceptions = [w.lower() for w in cfg.get("title_exceptions", [])]
     excl_companies = {normalise(c) for c in cfg.get("exclude_companies", [])}
     agency_words = [w.lower() for w in cfg.get("agency_words", [])]
     floor = cfg.get("min_salary", 33400)
@@ -221,7 +228,12 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
         if url in seen:
             stats["seen"] += 1
             continue
-        if any(re.search(rf"\b{re.escape(w)}\b", title.lower()) for w in excl_titles):
+        t = title.lower()
+        if incl_titles and not any(re.search(rf"\b{re.escape(w)}", t) for w in incl_titles):
+            stats["title"] += 1
+            continue
+        if not any(p in t for p in title_exceptions) and \
+                any(re.search(rf"\b{re.escape(w)}\b", t) for w in excl_titles):
             stats["title"] += 1
             continue
         if not company or normalise(company) in excl_companies:
@@ -246,7 +258,7 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
             flags.append(f"name match {score}%: check it's '{official}'")
         elif kind == "brand":
             flags.append(f"possible sponsor: register lists '{official}'. Check it's the same organisation")
-        if any(w in company.lower() for w in agency_words):
+        if any(re.search(rf"\b{re.escape(w)}\b", company.lower()) for w in agency_words):
             flags.append("agency: check who the employer is")
 
         min_amt = row.get("min_amount")

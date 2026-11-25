@@ -35,17 +35,54 @@ min_salary: 33400
 # Keep jobs that don't show a salary? (Many don't.) They are marked in the email.
 keep_jobs_without_salary: true
 
+# Only keep titles containing at least one of these words (case-insensitive).
+include_title_words:
+  - analyst
+  - analytics
+  - analysis
+  - insight
+  - intelligence
+  - data
+  - reporting
+  - project
+  - programme
+  - pmo
+  - coordinator
+  - co-ordinator
+  - operations
+  - business support
+  - pricing
+  - commercial
+  - planning
+  - associate consultant
+
 # Skip titles containing any of these words (case-insensitive).
 exclude_title_words:
   - senior
   - lead
   - principal
-  - head of
+  - head
   - director
   - vice president
+  - manager
+  - managing
+  - engineer
+  - scientist
+  - quant
+  - fellow
+  - editor
+  - accountant
+  - executive
+  - expert
   - intern
   - apprentice
   - volunteer
+
+# Keep these even if they contain an excluded word (e.g. "manager").
+title_exceptions:
+  - assistant project manager
+  - junior project manager
+  - associate project manager
 
 # Skip these companies (e.g. agencies you don't want, or roles already applied for).
 exclude_companies: []
@@ -65,6 +102,10 @@ agency_words:
   - michael page
   - reed
   - randstad
+  - goodman masson
+  - harnham
+  - aquent
+  - ocr alpha
 
 # How fuzzy the company name match can be (0-100). 95 is strict, 88 is loose.
 match_threshold: 92
