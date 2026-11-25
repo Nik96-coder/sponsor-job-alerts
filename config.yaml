@@ -1,0 +1,73 @@
+# What to search for. Each line is one search across all job sites.
+search_terms:
+  - business analyst
+  - data analyst
+  - business intelligence analyst
+  - information analyst
+  - reporting analyst
+  - insight analyst
+  - project support officer
+  - PMO analyst
+  - project coordinator
+  - assistant project manager
+  - junior project manager
+  - operations analyst
+
+location: London, United Kingdom
+distance_miles: 25
+
+# Job sites to check. LinkedIn, Indeed and Glassdoor work best for the UK.
+sites:
+  - indeed
+  - linkedin
+  - glassdoor
+
+# Look back this many hours each run. Slightly more than the schedule
+# (hourly) so nothing slips between runs. Duplicates are removed.
+hours_old: 3
+
+# Results per search term per site. Higher = slower and more likely to be rate limited.
+results_per_search: 25
+
+# Skilled Worker new entrant minimum salary (GBP per year).
+min_salary: 33400
+
+# Keep jobs that don't show a salary? (Many don't.) They are marked in the email.
+keep_jobs_without_salary: true
+
+# Skip titles containing any of these words (case-insensitive).
+exclude_title_words:
+  - senior
+  - lead
+  - principal
+  - head of
+  - director
+  - vice president
+  - intern
+  - apprentice
+  - volunteer
+
+# Skip these companies (e.g. agencies you don't want, or roles already applied for).
+exclude_companies: []
+
+# Recruitment agencies are often licensed sponsors themselves, but the job is
+# usually with their client. Flag them in the email instead of trusting the match.
+agency_words:
+  - recruitment
+  - resourcing
+  - staffing
+  - talent
+  - search
+  - consulting group
+  - robert walters
+  - hays
+  - harvey nash
+  - michael page
+  - reed
+  - randstad
+
+# How fuzzy the company name match can be (0-100). 95 is strict, 88 is loose.
+match_threshold: 92
+
+# Forget jobs already emailed after this many days.
+remember_days: 21
