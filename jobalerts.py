@@ -181,6 +181,7 @@ def fetch_jobs(cfg: dict):
                 hours_old=cfg.get("hours_old", 3),
                 country_indeed="UK",
                 enforce_annual_salary=True,
+                linkedin_fetch_description=cfg.get("linkedin_descriptions", True),
                 verbose=0,
             )
             log(f"'{term}': {len(df)} jobs")
@@ -208,6 +209,15 @@ def annual_max(row) -> float | None:
     return None
 
 
+# Catches wordings the phrase list misses, e.g. "we do not currently offer visa sponsorship".
+NO_SPONSOR_RE = re.compile(
+    r"\b(?:unable|cannot|can't|can not|won't|will not|do not|don't|does not|doesn't|are not|is not)"
+    r"\s+(?:currently\s+|presently\s+|at this time\s+|be\s+)?(?:able\s+to\s+)?(?:to\s+)?"
+    r"(?:offer|offering|provide|providing|support|supporting|sponsor|sponsoring|consider)\w*"
+    r"\s+(?:\w+\s+){0,4}?(?:visa\s+)?sponsor"
+)
+
+
 def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[dict]:
     keys = list(sponsors.keys())
     first_index = build_first_word_index(sponsors)
@@ -220,7 +230,11 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
     keep_no_salary = cfg.get("keep_jobs_without_salary", True)
     threshold = cfg.get("match_threshold", 92)
 
-    kept, stats = [], {"seen": 0, "title": 0, "company": 0, "not_sponsor": 0, "salary": 0}
+    no_phrases = [p.lower() for p in cfg.get("no_sponsorship_phrases", [])]
+    yes_phrases = [p.lower() for p in cfg.get("sponsorship_phrases", [])]
+
+    kept, stats = [], {"seen": 0, "title": 0, "company": 0, "not_sponsor": 0, "salary": 0,
+                       "advert_says_no_sponsorship": 0}
     for _, row in jobs.iterrows():
         url = str(row.get("job_url") or "")
         title = str(row.get("title") or "").strip()
@@ -252,7 +266,18 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
             stats["salary"] += 1
             continue
 
+        # Read the advert itself: drop it if it rules out sponsorship, mark it if it offers it.
+        desc = re.sub(r"[\s*_\\]+", " ", str(row.get("description") or "")).lower()
+        desc = desc.replace("’", "'")
+        says_no = any(p in desc for p in no_phrases) or bool(NO_SPONSOR_RE.search(desc))
+        if says_no:
+            stats["advert_says_no_sponsorship"] += 1
+            continue
+        says_yes = any(p in desc for p in yes_phrases)
+
         flags = []
+        if not desc.strip():
+            flags.append("advert text not available: check sponsorship yourself")
         if salary is None:
             flags.append("salary not listed")
         if kind == "fuzzy":
@@ -279,6 +304,7 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
             "url": url,
             "flags": flags,
             "dup_key": dup_key,
+            "sponsor_yes": says_yes,
         })
     # Same job on several sites: keep one copy, preferring the one that shows a salary.
     best = {}
@@ -289,7 +315,8 @@ def filter_jobs(jobs, sponsors: dict[str, str], seen: dict, cfg: dict) -> list[d
     stats["duplicate"] = len(kept) - len(best)
     kept = list(best.values())
     log(f"Filtered out: {stats}")
-    kept.sort(key=lambda j: (bool(j["flags"]), j["company"].lower()))
+    kept.sort(key=lambda j: (not j["sponsor_yes"], bool(j["flags"]), j["company"].lower()))
+    filter_jobs.dropped_no_sponsorship = stats["advert_says_no_sponsorship"]
     return kept
 
 
@@ -315,12 +342,14 @@ def save_seen(seen: dict, new_jobs: list[dict], remember_days: int) -> None:
 
 # ---------------------------------------------------------------- email
 
-def build_email(jobs: list[dict]) -> tuple[str, str]:
+def build_email(jobs: list[dict], dropped: int = 0) -> tuple[str, str]:
     subject = f"{len(jobs)} new sponsored job{'s' if len(jobs) != 1 else ''}: " + ", ".join(
         sorted({j['company'] for j in jobs})[:3]) + ("…" if len({j['company'] for j in jobs}) > 3 else "")
     rows = []
     for j in jobs:
         flags = "".join(f'<div style="color:#b45309;font-size:12px">⚠ {html.escape(f)}</div>' for f in j["flags"])
+        if j.get("sponsor_yes"):
+            flags = '<div style="color:#15803d;font-size:12px;font-weight:600">✓ Advert says it can sponsor</div>' + flags
         rows.append(
             f'<tr><td style="padding:10px;border-bottom:1px solid #e5e7eb">'
             f'<a href="{html.escape(j["url"])}" style="font-weight:600;color:#1d4ed8;text-decoration:none">{html.escape(j["title"])}</a>'
@@ -332,8 +361,11 @@ def build_email(jobs: list[dict]) -> tuple[str, str]:
         '<div style="font-family:Arial,sans-serif;max-width:640px">'
         f'<p>New roles from <b>licensed Skilled Worker sponsors</b>, posted in the last few hours.</p>'
         f'<table style="border-collapse:collapse;width:100%">{"".join(rows)}</table>'
-        '<p style="color:#6b7280;font-size:12px">Always check the advert says it can sponsor, '
-        'and that the salary meets your threshold, before applying.</p></div>'
+        + (f'<p style="color:#6b7280;font-size:12px">{dropped} more job{"s" if dropped != 1 else ""} '
+           'left out because the advert says it cannot sponsor.</p>' if dropped else '')
+        + '<p style="color:#6b7280;font-size:12px">Salaries from Glassdoor can be its own estimates. '
+        'Always check the advert says it can sponsor, and that the salary meets your threshold, '
+        'before applying.</p></div>'
     )
     return subject, body
 
@@ -372,12 +404,12 @@ def main() -> int:
     new_jobs = filter_jobs(jobs, sponsors, seen, cfg)
     log(f"New sponsored jobs: {len(new_jobs)}")
     for j in new_jobs:
-        print(f" - {j['title']} | {j['company']} | {j['salary'] or 'no salary'} | {j['url']}"
+        print(f" - {'[SPONSORS] ' if j['sponsor_yes'] else ''}{j['title']} | {j['company']} | {j['salary'] or 'no salary'} | {j['url']}"
               + (f"  [{'; '.join(j['flags'])}]" if j["flags"] else ""))
 
     if args.dry_run or not new_jobs:
         return 0
-    subject, body = build_email(new_jobs)
+    subject, body = build_email(new_jobs, getattr(filter_jobs, "dropped_no_sponsorship", 0))
     if os.environ.get("SMTP_USER") and os.environ.get("SMTP_PASSWORD"):
         send_email(subject, body)
     else:
