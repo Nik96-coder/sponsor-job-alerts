@@ -1,0 +1,210 @@
+# What to search for. Each line is one search across all job sites.
+search_terms:
+  - business analyst
+  - data analyst
+  - business intelligence analyst
+  - information analyst
+  - reporting analyst
+  - insight analyst
+  - project support officer
+  - PMO analyst
+  - project coordinator
+  - assistant project manager
+  - junior project manager
+  - operations analyst
+
+location: London, United Kingdom
+distance_miles: 25
+
+# Job sites to check. LinkedIn, Indeed and Glassdoor work best for the UK.
+sites:
+  - indeed
+  - linkedin
+  - glassdoor
+
+# Look back this many hours each run. Slightly more than the schedule
+# (hourly) so nothing slips between runs. Duplicates are removed.
+hours_old: 3
+
+# Results per search term per site. Higher = slower and more likely to be rate limited.
+results_per_search: 25
+
+# Skilled Worker new entrant minimum salary (GBP per year).
+min_salary: 33400
+
+# Keep jobs that don't show a salary? (Many don't.) They are marked in the email.
+keep_jobs_without_salary: true
+
+# Only keep titles containing at least one of these words (case-insensitive).
+include_title_words:
+  - analyst
+  - analytics
+  - analysis
+  - insight
+  - intelligence
+  - data
+  - reporting
+  - project
+  - programme
+  - pmo
+  - coordinator
+  - co-ordinator
+  - operations
+  - business support
+  - pricing
+  - commercial
+  - planning
+  - associate consultant
+
+# Skip titles containing any of these words (case-insensitive).
+exclude_title_words:
+  - senior
+  - lead
+  - principal
+  - head
+  - director
+  - vice president
+  - manager
+  - managing
+  - engineer
+  - scientist
+  - quant
+  - quantitative
+  - cyber
+  - security
+  - laboratory
+  - service desk
+  - trainee
+  - administrator
+  - yoe
+  - fellow
+  - editor
+  - accountant
+  - executive
+  - expert
+  - intern
+  - apprentice
+  - volunteer
+
+# Keep these even if they contain an excluded word (e.g. "manager").
+title_exceptions:
+  - assistant project manager
+  - junior project manager
+  - associate project manager
+
+# Skip these companies (e.g. agencies you don't want, or roles already applied for).
+exclude_companies: []
+
+# Recruitment agencies are often licensed sponsors themselves, but the job is
+# usually with their client. Flag them in the email instead of trusting the match.
+agency_words:
+  - recruitment
+  - resourcing
+  - staffing
+  - talent
+  - search
+  - consulting group
+  - robert walters
+  - hays
+  - harvey nash
+  - michael page
+  - reed
+  - randstad
+  - goodman masson
+  - harnham
+  - aquent
+  - ocr alpha
+
+# How fuzzy the company name match can be (0-100). 95 is strict, 88 is loose.
+match_threshold: 92
+
+# Forget jobs already emailed after this many days.
+remember_days: 21
+
+# Read each advert's text. LinkedIn needs an extra request per job for this,
+# which makes runs slower. Set to false if runs start taking too long.
+linkedin_descriptions: true
+
+# If the advert contains any of these, the job is left out (checked first).
+no_sponsorship_phrases:
+  - unable to offer sponsorship
+  - unable to offer visa sponsorship
+  - unable to provide sponsorship
+  - unable to provide visa sponsorship
+  - unable to sponsor
+  - not able to offer sponsorship
+  - not able to offer visa sponsorship
+  - not able to provide sponsorship
+  - not able to sponsor
+  - cannot offer sponsorship
+  - cannot offer visa sponsorship
+  - cannot provide sponsorship
+  - cannot sponsor
+  - can't sponsor
+  - can't offer sponsorship
+  - can't offer visa sponsorship
+  - will not sponsor
+  - won't sponsor
+  - do not offer sponsorship
+  - do not offer visa sponsorship
+  - do not provide sponsorship
+  - do not provide visa sponsorship
+  - do not sponsor
+  - don't sponsor
+  - don't offer sponsorship
+  - does not offer sponsorship
+  - does not offer visa sponsorship
+  - does not provide sponsorship
+  - does not provide visa sponsorship
+  - does not sponsor
+  - doesn't offer sponsorship
+  - no visa sponsorship
+  - no sponsorship
+  - sponsorship is not available
+  - sponsorship not available
+  - sponsorship is not offered
+  - sponsorship will not be
+  - sponsorship cannot be
+  - not eligible for sponsorship
+  - not eligible for visa sponsorship
+  - does not attract sponsorship
+  - does not meet the requirements for sponsorship
+  - not in a position to offer sponsorship
+  - not in a position to sponsor
+  - without the need for sponsorship
+  - without the need for visa sponsorship
+  - without requiring sponsorship
+  - without requiring visa sponsorship
+  - without sponsorship
+  - unsponsored
+  - not open to applicants who require
+  - unable to consider applications from candidates who require
+  - unable to consider candidates who require
+  - only able to progress with candidates who already have the right to work
+
+# If the advert contains any of these (and none of the above), it is marked
+# "Advert says it can sponsor" and shown first.
+sponsorship_phrases:
+  - sponsorship is available
+  - sponsorship available
+  - sponsorship may be available
+  - sponsorship can be provided
+  - sponsorship can be offered
+  - sponsorship will be provided
+  - sponsorship will be considered
+  - sponsorship is offered
+  - we can sponsor
+  - able to sponsor
+  - able to offer sponsorship
+  - able to offer visa sponsorship
+  - able to provide sponsorship
+  - able to provide visa sponsorship
+  - we will sponsor
+  - happy to sponsor
+  - offer visa sponsorship
+  - offers visa sponsorship
+  - provide visa sponsorship
+  - provides visa sponsorship
+  - support visa sponsorship
+  - welcome applications from candidates requiring sponsorship
+  - welcome applicants who require sponsorship
