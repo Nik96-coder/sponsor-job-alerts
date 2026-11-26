@@ -120,3 +120,91 @@ match_threshold: 92
 
 # Forget jobs already emailed after this many days.
 remember_days: 21
+
+# Read each advert's text. LinkedIn needs an extra request per job for this,
+# which makes runs slower. Set to false if runs start taking too long.
+linkedin_descriptions: true
+
+# If the advert contains any of these, the job is left out (checked first).
+no_sponsorship_phrases:
+  - unable to offer sponsorship
+  - unable to offer visa sponsorship
+  - unable to provide sponsorship
+  - unable to provide visa sponsorship
+  - unable to sponsor
+  - not able to offer sponsorship
+  - not able to offer visa sponsorship
+  - not able to provide sponsorship
+  - not able to sponsor
+  - cannot offer sponsorship
+  - cannot offer visa sponsorship
+  - cannot provide sponsorship
+  - cannot sponsor
+  - can't sponsor
+  - can't offer sponsorship
+  - can't offer visa sponsorship
+  - will not sponsor
+  - won't sponsor
+  - do not offer sponsorship
+  - do not offer visa sponsorship
+  - do not provide sponsorship
+  - do not provide visa sponsorship
+  - do not sponsor
+  - don't sponsor
+  - don't offer sponsorship
+  - does not offer sponsorship
+  - does not offer visa sponsorship
+  - does not provide sponsorship
+  - does not provide visa sponsorship
+  - does not sponsor
+  - doesn't offer sponsorship
+  - no visa sponsorship
+  - no sponsorship
+  - sponsorship is not available
+  - sponsorship not available
+  - sponsorship is not offered
+  - sponsorship will not be
+  - sponsorship cannot be
+  - not eligible for sponsorship
+  - not eligible for visa sponsorship
+  - does not attract sponsorship
+  - does not meet the requirements for sponsorship
+  - not in a position to offer sponsorship
+  - not in a position to sponsor
+  - without the need for sponsorship
+  - without the need for visa sponsorship
+  - without requiring sponsorship
+  - without requiring visa sponsorship
+  - without sponsorship
+  - unsponsored
+  - not open to applicants who require
+  - unable to consider applications from candidates who require
+  - unable to consider candidates who require
+  - only able to progress with candidates who already have the right to work
+
+# If the advert contains any of these (and none of the above), it is marked
+# "Advert says it can sponsor" and shown first.
+sponsorship_phrases:
+  - sponsorship is available
+  - sponsorship available
+  - sponsorship may be available
+  - sponsorship can be provided
+  - sponsorship can be offered
+  - sponsorship will be provided
+  - sponsorship will be considered
+  - sponsorship is offered
+  - we can sponsor
+  - able to sponsor
+  - able to offer sponsorship
+  - able to offer visa sponsorship
+  - able to provide sponsorship
+  - able to provide visa sponsorship
+  - we will sponsor
+  - happy to sponsor
+  - offer visa sponsorship
+  - offers visa sponsorship
+  - provide visa sponsorship
+  - provides visa sponsorship
+  - support visa sponsorship
+  - welcome applications from candidates requiring sponsorship
+  - welcome applicants who require sponsorship
